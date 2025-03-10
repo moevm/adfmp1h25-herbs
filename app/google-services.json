@@ -11,5 +11,18 @@
         "android_client_info": {
           "package_name": "com.herbsapp"
         }
-      }}]
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBa-inRFyr2xj94wR_dwzMQhB_NMZNUzP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ]
 }
