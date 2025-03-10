@@ -1,3 +1,175 @@
 <resources>
     <string name="app_name">HerbsApp</string>
+
+    <string name="google_play_link">https://play.google.com/store/apps/details?id=com.herbsapp</string>
+
+    <string name="account_title">Личный кабинет&#x1f60d; </string>
+    <string name="launch_title">Изучи все растения Ленинградской области</string>
+    <string name="login">Вход</string>
+    <string name="register">Регистрация</string>
+    <string name="favourites">Избранное</string>
+    <string name="determiner">Определитель</string>
+
+    <string name="login_title">Добро пожаловать!! &#x1f60d;</string>
+    <string name="login_subtitle">Здесь вы узнаете о питерских растениях и не только !</string>
+    <string name="email">Почта</string>
+    <string name="password">Пароль</string>
+    <string name="wrong_login">Неверный логин или пароль</string>
+    <string name="empty_text_field">Поля ввода пусты</string>
+    <string name="passwords_dont_match">Пароли не совпадают</string>
+
+    <string name="register_subtitle">Введите ваши данные, для регистрации аккаунта </string>
+    <string name="name">Имя</string>
+    <string name="repeat_password">Повторите пароль</string>
+    <string name="already_have_account">Уже есть аккаунт?</string>
+    <string name="user_already_registered">Пользователь с этой почтой уже зарегистрирован</string>
+    <string name="register_done">Регистрация успешно завершена</string>
+    <string name="need_login">Вам необходимо авторизироваться</string>
+    <string name="pass_length">Длинна пароля должна быть более 6 символов</string>
+
+    <string name="spb">СПБ</string>
+    <string name="search_by_sign">Поиск по признакам</string>
+    <string name="search_placeholder">Найди нужное растение !</string>
+    <string name="sign_choose_title">Вы выбрали признаки</string>
+    <string name="description">Ботаническое описание</string>
+    <string name="determiner_choose_all">Вы ответили не на все вопросы</string>
+
+    <string name="more">ещё</string>
+
+    <string name="sign_all">Все</string>
+    <string name="sign_taste">Вкус</string>
+    <string name="sign_class">Класс</string>
+    <string name="sign_genus">Род</string>
+    <string name="sign_family">Семейство</string>
+
+    <string name="taste_1">Сладкий</string>
+    <string name="taste_2">Горький</string>
+    <string name="taste_3">Кислый</string>
+    <string name="taste_4">Соленый</string>
+    <string name="taste_5">Пряный</string>
+
+    <string name="class_1">Зостерофилловые</string>
+    <string name="class_2">Кладоксилеевые</string>
+    <string name="class_3">Риниопсиды</string>
+    <string name="class_4">Бангиевые</string>
+    <string name="class_5">Гинкговые</string>
+    <string name="class_6">Двудольные</string>
+    <string name="class_7">Конъюгаты</string>
+    <string name="class_8">Листостебельные мхи</string>
+    <string name="class_9">Мараттиевые</string>
+    <string name="class_10">Однодольные</string>
+    <string name="class_11">Папоротниковые</string>
+    <string name="class_12">Плауновые</string>
+    <string name="class_13">Полушниковые</string>
+    <string name="class_14">Псилотовидные</string>
+    <string name="class_15">Сфагновые мхи</string>
+    <string name="class_16">Требуксиофициевые</string>
+    <string name="class_17">Ульвофициевые</string>
+    <string name="class_18">Флоридеевые водоросли</string>
+    <string name="class_19">Хлорофициевые</string>
+    <string name="class_20">Родельфис</string>
+
+    <string name="genus_1">Лаблаб</string>
+    <string name="genus_2">Лабурнум</string>
+    <string name="genus_3">Лакнантес</string>
+    <string name="genus_4">Лактука</string>
+    <string name="genus_5">Лагаросифон</string>
+    <string name="genus_6">Лагаростробос</string>
+    <string name="genus_7">Мелия</string>
+    <string name="genus_8">Мелика</string>
+    <string name="genus_9">Астрагал</string>
+    <string name="genus_10">Bulbophyllum</string>
+    <string name="genus_11">Психотрия</string>
+    <string name="genus_12">Молочай</string>
+    <string name="genus_13">Carex</string>
+    <string name="genus_14">Колеус</string>
+    <string name="genus_15">Плектрантус</string>
+    <string name="genus_16">Аукубу</string>
+    <string name="genus_17">Гризелинию</string>
+
+    <string name="family_1">Крестоцветные</string>
+    <string name="family_2">Зонтичные</string>
+    <string name="family_3">Амарантовые</string>
+    <string name="family_4">Вересковые</string>
+    <string name="family_5">Розоцветные</string>
+    <string name="family_6">Сложноцветные</string>
+    <string name="family_7">Гвоздичные</string>
+    <string name="family_8">Норичниковые</string>
+    <string name="family_9">Бурачниковые</string>
+    <string name="family_10">Кувшинковые</string>
+    <string name="family_11">Мальвовые</string>
+    <string name="family_12">Кипрейные</string>
+    <string name="family_13">Вьюнковые</string>
+    <string name="family_14">Крапивные</string>
+    <string name="family_15">Гречишные</string>
+    <string name="family_16">Подорожниковые</string>
+    <string name="family_17">Крыжовниковые</string>
+    <string name="family_18">Тыквенные</string>
+
+    <string name="search">Поиск</string>
+
+    <string name="views">Просмотров</string>
+    <string name="share">Поделиться</string>
+    <string name="sort">Сортировка</string>
+    <string name="watch_more">Смотри Еще</string>
+    <string name="show_more">Показать Все</string>
+    <string name="continuee">Далее</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="hello">Даров&#x1f44b;</string>
+    <string name="nothing_find">Ничего не найдено</string>
+
+    <string name="change_name">Сменить имя</string>
+    <string name="change_name_apply">Имя успешно изменено</string>
+    <string name="change_mail_apply">Почта успешно изменена</string>
+    <string name="new_name">Новое Имя</string>
+    <string name="change_mail">Сменить почту</string>
+    <string name="new_mail">Новая почта</string>
+    <string name="exit">Выйти из аккаунта</string>
+
+    
+    <string name="determiner_question_1">Какой тип растения вы наблюдаете?</string>
+    <string name="determiner_question_1_var1">Трава</string>
+    <string name="determiner_question_1_var2">Кустарник</string>
+    <string name="determiner_question_1_var3">Дерево</string>
+
+    <string name="determiner_question_2">Какова форма листьев?</string>
+    <string name="determiner_question_2_var1">Оавльные</string>
+    <string name="determiner_question_2_var2">Ланцетные</string>
+    <string name="determiner_question_2_var3">Игольчатые</string>
+
+    <string name="determiner_question_3">Где вы обнаружили растение?</string>
+    <string name="determiner_question_3_var1">Лес</string>
+    <string name="determiner_question_3_var2">Луг</string>
+    <string name="determiner_question_3_var3">Парк</string>
+
+    <string name="determiner_question_4">Есть ли у растения характерный запах?</string>
+    <string name="determiner_question_4_var1">Да</string>
+    <string name="determiner_question_4_var2">Нет</string>
+
+    // HERBS
+    <string name="herb_name_1">Бодяк полевой</string>
+    <string name="herb_name_2">Сныть обыкновенная</string>
+    <string name="herb_name_3">Укроп пахучий</string>
+    <string name="herb_name_4">Марь белая</string>
+
+    <string name="herb_title_1">Листья жёсткие, колючие, образуют прикорневую розетку, из которой затем вырастает стебель высотой от 30 до 200 см; в верхней части стебель ветвится. \nСильный стержневой корень может проникать на 2—3 метра, иногда встречаются корни длиною 5—6 метров. Приблизительно на глубине 35 см от главного корня параллельно поверхности отходят клубневидные утолщённые корни, содержащие запас питательных веществ (инулина)[2]. \nРастение обычно двудомное, хорошо размножается вегетативным путём. Бывает, что образуется колония (поликормон) только из особей одного пола. Тогда растение цветёт, но семян не даёт. Время цветения в Европейской части России — с июня по октябрь.</string>
+    <string name="herb_title_2">Сныть обыкновенная (лат. Aegopodium podagraria) относится к следующей таксономической классификации:</string>
+    <string name="herb_title_3">Укро́п паху́чий, или огоро́дный (лат. Anéthum graveólens)[1] — вид однолетних травянистых растений семейства Зонтичные, популярное огородное растение, выращиваемое как пряность, наиболее распространённый вид рода Укроп (лат. Anethum). \nВ диком виде встречается в юго-западной и центральной Азии.</string>
+    <string name="herb_title_4">Марь бе́лая, или Марь обыкнове́нная[3] (лат. Chenopódium álbum) — быстрорастущее однолетнее травянистое растение, вид рода Марь (Chenopodium) семейства Амарантовые (Amaranthaceae) (ранее род относился к семейству Маревые).\nНесмотря на то, что растение в некоторых регионах культивируется как продовольственное, во многих местах оно считается сорняком.\nРастение широко распространено по всему миру, на территории России от Арктики до высокогорных районов на юге. Обычное рудеральное растение в Средней России.</string>
+
+    <string name="herb_description_2">Листья жёсткие, колючие, образуют прикорневую розетку, из которой затем вырастает стебель высотой от 30 до 200 см; в верхней части стебель ветвится. \nСильный стержневой корень может проникать на 2—3 метра, иногда встречаются корни длиною 5—6 метров. Приблизительно на глубине 35 см от главного корня параллельно поверхности отходят клубневидные утолщённые корни, содержащие запас питательных веществ (инулина)[2]. \nРастение обычно двудомное, хорошо размножается вегетативным путём. Бывает, что образуется колония (поликормон) только из особей одного пола. Тогда растение цветёт, но семян не даёт. Время цветения в Европейской части России — с июня по октябрь.</string>
+    <string name="herb_description_1">Трудноискоренимый сорняк полей хлебных злаков, огородов и молодых лесопосадок. Иногда за счёт вегетативного размножения может заполнить всё поле, вытеснив культурные растения. В природе также встречается на лугах, в зарослях кустарников, вдоль дорог в низменностях и в горах. Заросли бодяка не типичны для естественных луговых формаций в связи с незначительным распространением свежих пахотных бросовых земель[3].\nПчёлы на цветках бодяка\nПосле цветения, виден пух с семенам\nКрасновато-фиолетовые цветки выделяют много нектара и хорошо посещаются пчёлами[2]. В условиях Западной Сибири медовая продуктивность сплошных зарослей может достигать 580—740 кг/га за счет большого количества цветков на единицу площади (более 1 миллиарда на 1 гектаре)[3]. По другим данным продуктивность мёда 120 кг/га при сплошном произрастании. Продуктивность нектара одним цветком 0,1 мг, растением — 400 мг. Продуктивность пыльцы пыльником 0,03 мг, растением 604,8 мг. На участках бодяка полевого на 196 его соцветиях встретилось 110 медоносных пчёл, 32 мухи, 27 бабочек, 11 одиночных пчёл, 8 жуков, 6 наездников, 2 шмеля. Для наполнения медового зобика (60 мг) одна рабочая пчела должна посетить 1176 цветков при сплошном произрастании и тогда она принесёт в улей 19,5 мг нектара (расстояние 1 км от пасеки). Медоносной пчелой будет затрачено 68 % собранного за одну фуражировку нектара на осматривание цветков и полёт до улья и обратно[1].\nОпасен для всех животных в зелёном корме из-за повышенного содержания нитритов. После выпаса овец на зарослях бодяка у них образуются фитобезоары, вызывающие непроходимость кишечника[4].\nРаньше пучки «пуха» и отцветающие растения использовались в качестве материала для набивки чучел животных.\nЕсть данные о применении растения в народной медицине.</string>
+    <string name="herb_description_3">Растение с сильным пряным запахом.\nСтебель одиночный, прямой ветвистый или почти простой, высотой 40—150 см, тонко бороздчатый, неопушённый, тёмно-зелёный, в верхней части ветвистый, между ветвями изогнутый.\nЛистья трижды-, четыреждыперисторассечённые, яйцевидные, дольки последнего порядка линейно-нитевидные или щетиновидные. Нижние листья на черешках, расширенных в продолговатое влагалище длиной 1,5—2 см; верхние листья сидячие, влагалищные.\nДвойные зонтики крупные, диаметром до 15 см, 20—50-лучевые. Цветки собраны в небольшие зонтики диаметром 2—9 см. Зубцы чашечки короткие; лепестки жёлтые; подстолбие светло-жёлтое, подушковидное; столбики очень короткие, во время цветения прямые, позже отогнутые; рыльце булавовидно головчатое.\nПлод — вислоплодник. Семена яйцевидные или широкоэллиптические, 3—5 мм в длину и 1,5—3,5 мм в толщину.\nЦветёт в июне — июле. Плоды созревают в июле — сентябре.\nВ начале цветения развёртывается до трёх наружных лепестков цветка, одновременно с высвобождением одной-трёх тычинок; впоследствии развиваются остальные тычинки и лепестки. Цветки распускаются по направлению от периферии к центру соцветия. В период цветения при благоприятных условиях цветки раскрываются в 7 утра, полное раскрытие происходит к 10-12 часам. В зависимости от внешних условий цветение продолжается 2-4 суток[2].</string>
+    <string name="herb_description_4">Сильноветвистое однолетнее растение 10—200 см в высоту[4].\nЛистья очерёдные вытянутые, яйцевидно-ромбической формы с зубчатыми краями или неглубоко лопастные, реже цельнокрайные с одним крупным зубцом. Часто покрыты мучнистым налётом c обеих сторон.\nЦветки обоеполые, небольшого размера, радиально симметричные, образуют плотные верхушечные или пазушные колосовидные соцветия, собранные в метёлку длиной 10—40 см. Листочки околоцветника килеватые. Околоплодник светло-жёлтый, голый или покрытый мучнистым налетом. Цветение происходит во второй половине лета и длится до начала осени.\nСемена округлые, около 1 мм в диаметре[4], чёрные, блестящие, со слабыми радиальными бороздками и острым краем. На одном растении вызревает до 100 000 семян, которые, легко осыпаясь, сильно засоряют территорию. Могут долго находиться в почве до наступления благоприятных условий. При массовом прорастании могут нанести заметный ущерб посевам культурных растений.</string>
+
+
+    <string name="determiner_find">Возможно вы нашли</string>
+    <string name="loading">Загрузка...</string>
+
+    <string name="wrong_flower">Нет растения, подходящего под описание</string>
+    <string name="try_again">Попробуйте ещё раз</string>
+    <string name="authors">Мамин Роман Александрович, гр. 1304\nГерасименко Ярослав Дмитриевич, гр. 1303\nЧернякова Александра Дмитриевна, гр. 1304\n</string>
+    <string name="authors_title">Авторы</string>
+
 </resources>
