@@ -40,17 +40,19 @@ import com.herbsapp.presentation.ui.theme.gray
 import com.herbsapp.presentation.ui.theme.primary
 import com.herbsapp.presentation.ui.theme.white
 import com.herbsapp.presentation.viewmodels.AuthViewModel
+import com.herbsapp.presentation.viewmodels.DeterminerViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun Navigation(navHostController: NavHostController) {
+    val determinerVm = koinViewModel<DeterminerViewModel>()
     NavHost(navController = navHostController, startDestination = Routes.Launch.route) {
         composable(Routes.Launch.route) { LaunchScreen(navController = navHostController) }
         composable(Routes.Login.route) { LoginScreen(navController = navHostController) }
         composable(Routes.Register.route) { RegisterScreen(navController = navHostController) }
         composable(Routes.Main.route) { MainScreen(navController = navHostController) }
         composable(Routes.Favourites.route) { FavouritesScreen(navController = navHostController) }
-        composable(Routes.Determiner.route) { DeterminerScreen(navController = navHostController) }
+        composable(Routes.Determiner.route) { DeterminerScreen(navController = navHostController, determinerVm) }
         composable(Routes.Account.route) { AccountScreen(navController = navHostController) }
         composable(Routes.FlowerInfo.route + "/{id}") { entry ->
             FlowerInfoScreen(

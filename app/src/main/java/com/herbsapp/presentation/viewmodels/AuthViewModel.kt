@@ -21,6 +21,9 @@ class AuthViewModel(private val repository: AppRepository): ViewModel() {
     private val _register = MutableStateFlow<Resource<FirebaseUser>?>(null)
     val register: StateFlow<Resource<FirebaseUser>?> = _register
 
+    private val _changeMailState = MutableStateFlow<Resource<String>?>(null)
+    val changeMailState: StateFlow<Resource<String>?> = _changeMailState
+
     val currentUser: FirebaseUser?
         get() = repository.currentUser
 
@@ -43,7 +46,9 @@ class AuthViewModel(private val repository: AppRepository): ViewModel() {
     }
 
     fun changeEmail(mail: String) = viewModelScope.launch {
-        repository.changeMail(mail)
+        _changeMailState.value = Resource.Loading
+        val result = repository.changeMail(mail)
+        _changeMailState.value = result
     }
 
     fun registerUser(name: String, email: String, password: String) = viewModelScope.launch {

@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +59,7 @@ import com.herbsapp.presentation.ui.PrimaryButtonWIcon
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
+import com.herbsapp.presentation.ui.theme.black
 import com.herbsapp.presentation.ui.theme.button
 import com.herbsapp.presentation.ui.theme.gray
 import com.herbsapp.presentation.ui.theme.primary
@@ -102,6 +104,7 @@ fun Share(context: Context, herb: HerbEntity) {
     val title = context.getString(R.string.app_name)
     val extraText = """
 ${herb.name}
+${herb.title}
 
 ${context.getText(R.string.google_play_link)}
     """.trimIndent()
@@ -195,13 +198,16 @@ fun SubtitleInfo(herb: HerbEntity) {
 fun BodyInfo(herb: HerbEntity) {
     Column(Modifier.padding(horizontal = 24.dp).verticalScroll(rememberScrollState())) {
         Text(text = herb.name, style = Typography.displayLarge)
-        Text(modifier = Modifier.padding(start = 8.dp), text = herb.title, style = Typography.bodyLarge)
+        Text(modifier = Modifier, text = herb.title, style = Typography.bodyLarge)
+        Spacer(Modifier.size(8.dp))
+        Text(modifier = Modifier.padding(start = 8.dp), text = herb.description, style = Typography.bodyLarge, color = black, maxLines = 8, overflow = TextOverflow.Ellipsis)
 
         Spacer(Modifier.size(8.dp))
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_family) + ": " + herb.family, style = Typography.titleSmall.copy(fontSize = 18.sp))
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_taste) + ": " + herb.taste, style = Typography.titleSmall.copy(fontSize = 18.sp))
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_class) + ": " + herb.mClass, style = Typography.titleSmall.copy(fontSize = 18.sp))
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_genus) + ": " + herb.genus, style = Typography.titleSmall.copy(fontSize = 18.sp))
+
         Spacer(Modifier.size(90.dp))
     }
 }

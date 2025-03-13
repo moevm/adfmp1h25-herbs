@@ -28,11 +28,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +72,7 @@ import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
 import com.herbsapp.presentation.ui.theme.black
 import com.herbsapp.presentation.ui.theme.border
+import com.herbsapp.presentation.ui.theme.button
 import com.herbsapp.presentation.ui.theme.gray
 import com.herbsapp.presentation.ui.theme.primary
 import com.herbsapp.presentation.ui.theme.white
@@ -83,59 +85,43 @@ import org.koin.androidx.compose.koinViewModel
 fun MainScreen(navController: NavController = rememberNavController()) {
     val vm = koinViewModel<MainViewModel>()
     val vmAuth = koinViewModel<AuthViewModel>()
+    val list = vm.herbsList.collectAsState()
 
-    LaunchedEffect(Unit) {
-        vm.getData()
-    }
-
-    LazyColumn (Modifier.fillMaxSize().nestedScroll(rememberNestedScrollInteropConnection())) {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .nestedScroll(rememberNestedScrollInteropConnection())
+    ) {
         item {
             Spacer(Modifier.size(16.dp))
-            MainTitle(navController, vmAuth)
-        }
+            MainTitle(navController, vmAuth, vm)
 
-        item {
             MainSearch(vm)
-        }
 
-        item {
             SignsChooseList(vm)
-        }
 
-        item {
+            Spacer(Modifier.size(16.dp))
+            Filter(vm)
+
             Spacer(Modifier.size(16.dp))
             SearchResult(navController, vm)
+
+            Text(
+                text = stringResource(R.string.watch_more),
+                modifier = Modifier.padding(16.dp),
+                style = Typography.titleLarge
+            )
         }
 
-        item {
-            Recommendations(navController, vm)
-        }
-
-    }
-
-}
-
-@Composable
-fun Recommendations(navController: NavController, viewModel: MainViewModel) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text(text = stringResource(R.string.watch_more), style = Typography.titleLarge)
-        Row {
-            Text(text = stringResource(R.string.show_more), style = Typography.titleSmall.copy(color = primary))
-            Spacer(Modifier.size(4.dp))
-            Image(rememberAsyncImagePainter(R.drawable.ico_right), contentDescription = null, modifier = Modifier.size(20.dp), contentScale = ContentScale.Fit)
-        }
-    }
-
-    val list = viewModel.herbsList.collectAsState()
-
-    Column {
         if (!list.value.isNullOrEmpty()) {
-            list.value.forEach {
+            items(list.value) {
                 HerbHorizontalCard(it, navController)
                 androidx.compose.material.Divider(
                     color = border,
                     thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                 )
             }
         }
@@ -143,72 +129,228 @@ fun Recommendations(navController: NavController, viewModel: MainViewModel) {
 
 }
 
+@Composable
+fun Filter(vm: MainViewModel) {
+    val expanded = remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    Row(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .clickable { expanded.value = !expanded.value },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val title = remember { mutableStateOf(context.getString(R.string.sort))}
+        Image(
+            rememberAsyncImagePainter(R.drawable.ico_filter, context.imageLoader()),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(20.dp),
+            contentDescription = null
+        )
+        Spacer(Modifier.size(4.dp))
+        Text(text = title.value, style = Typography.titleSmall)
+        DropdownMenu(expanded = expanded.value,
+            containerColor = white,
+            shape = RoundedCornerShape(20.dp),
+            onDismissRequest = { expanded.value = false }) {
+            DropdownMenuItem(text = {
+                Text(
+                    stringResource(R.string.sort_default),
+                    style = Typography.bodyMedium
+                )
+            }, onClick = {
+                expanded.value = false
+                title.value = context.getString(R.string.sort)
+                vm.sort(context.getString(R.string.sort_default))
+            })
+            DropdownMenuItem(text = {
+                Text(
+                    stringResource(R.string.sort_name),
+                    style = Typography.bodyMedium
+                )
+            }, onClick = {
+                expanded.value = false
+                title.value = "${context.getString(R.string.sort)} ${context.getString(R.string.sort_name).lowercase()}"
+                vm.sort(context.getString(R.string.sort_name))
+            })
+            DropdownMenuItem(text = {
+                Text(
+                    stringResource(R.string.sort_views),
+                    style = Typography.bodyMedium
+                )
+            }, onClick = {
+                expanded.value = false
+                title.value = "${context.getString(R.string.sort)} ${context.getString(R.string.sort_views).lowercase()}"
+                vm.sort(context.getString(R.string.sort_views))
+            })
+            DropdownMenuItem(text = {
+                Text(
+                    stringResource(R.string.sort_rating),
+                    style = Typography.bodyMedium
+                )
+            }, onClick = {
+                expanded.value = false
+                title.value = "${context.getString(R.string.sort)} ${context.getString(R.string.sort_rating).lowercase()}"
+                vm.sort(context.getString(R.string.sort_rating))
+            })
+        }
+    }
+
+
+}
 
 @Composable
 fun HerbHorizontalCard(herbEntity: HerbEntity, navController: NavController) {
     val context = LocalContext.current
-    Row(modifier = Modifier.fillMaxWidth().clickable {
-        navController.navigate(Routes.FlowerInfo.route + "/${herbEntity.id}")
-    }.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                navController.navigate(Routes.FlowerInfo.route + "/${herbEntity.id}")
+            }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(rememberAsyncImagePainter(herbEntity.imageURL.first(), context.imageLoader()), modifier = Modifier.size(70.dp).clip(
-                RoundedCornerShape(16.dp)
-            ), contentScale = ContentScale.Crop, contentDescription = null)
-            Column(Modifier.height(60.dp).padding(horizontal = 16.dp), verticalArrangement = Arrangement.SpaceBetween) {
-                Text(text = herbEntity.name, style = Typography.titleSmall, softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Image(
+                rememberAsyncImagePainter(herbEntity.imageURL.first(), context.imageLoader()),
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentScale = ContentScale.Crop,
+                contentDescription = null
+            )
+            Column(
+                Modifier
+                    .height(60.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = herbEntity.name,
+                    style = Typography.titleSmall,
+                    softWrap = false,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
                 Spacer(Modifier.size(2.dp))
                 UserLocation(Typography.headlineSmall, 15.dp)
                 Spacer(Modifier.size(2.dp))
-                RatingViews(herbEntity.rating.toString(), views = herbEntity.views, 15.dp, Typography.headlineSmall)
+                RatingViews(
+                    herbEntity.rating.toString(),
+                    views = herbEntity.views,
+                    15.dp,
+                    Typography.headlineSmall
+                )
             }
         }
-        Icon(rememberAsyncImagePainter(R.drawable.ico_back, context.imageLoader()) ,tint = primary, contentDescription = null, modifier = Modifier.size(width = 28.dp, height = 60.dp).rotate(180f).border(1.dp, border, CircleShape).padding(horizontal = 4.dp))
+        Icon(
+            rememberAsyncImagePainter(R.drawable.ico_back, context.imageLoader()),
+            tint = primary,
+            contentDescription = null,
+            modifier = Modifier
+                .size(width = 28.dp, height = 60.dp)
+                .rotate(180f)
+                .border(1.dp, border, CircleShape)
+                .padding(horizontal = 4.dp)
+        )
     }
 
 }
 
 @Composable
 fun SearchResult(navController: NavController, viewModel: MainViewModel) {
-   val list = viewModel.searchList.collectAsState()
+    val list = viewModel.searchList.collectAsState()
     if (!list.value.isNullOrEmpty()) {
-        LazyRow(modifier = Modifier.fillMaxWidth().padding(start = 14.dp)) {
-                items(list.value) {
-                    HerbCard(it, navController, viewModel)
-                }
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 14.dp)
+        ) {
+            items(list.value) {
+                HerbCard(it, navController, viewModel)
+            }
         }
     } else {
-        Text(text = stringResource(R.string.nothing_find), style = Typography.titleLarge.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().padding(16.dp))
+        Text(
+            text = stringResource(R.string.nothing_find),
+            style = Typography.titleLarge.copy(textAlign = TextAlign.Center),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
     }
 
 }
 
 @Composable
-fun HerbCard(herbEntity: HerbEntity, navController: NavController, vm: MainViewModel, isLikable: Boolean = true) {
+fun HerbCard(
+    herbEntity: HerbEntity,
+    navController: NavController,
+    vm: MainViewModel,
+    isLikable: Boolean = true
+) {
     var isLiked by remember { mutableStateOf(herbEntity.isLiked) }
 
     val context = LocalContext.current
     val likedColor by animateColorAsState(if (isLiked) primary else gray)
-    Box(modifier = Modifier.padding(horizontal = 8.dp).size(height = 200.dp, width = 150.dp).clip(RoundedCornerShape(20.dp)).clickable { navController.navigate(Routes.FlowerInfo.route + "/${herbEntity.id}") }) {
-        Image(rememberAsyncImagePainter(herbEntity.imageURL.first(), context.imageLoader()), modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop, contentDescription = null)
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .size(height = 200.dp, width = 150.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { navController.navigate(Routes.FlowerInfo.route + "/${herbEntity.id}") }) {
+        Image(
+            rememberAsyncImagePainter(herbEntity.imageURL.first(), context.imageLoader()),
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            contentDescription = null
+        )
         if (isLikable) {
             Icon(
                 rememberAsyncImagePainter(R.drawable.ico_like),
                 tint = likedColor,
                 contentDescription = "like",
-                modifier = Modifier.padding(8.dp).clickable {
-                    isLiked = !isLiked
-                    vm.updateHerb(herbEntity.copy(isLiked = isLiked))
-                }.size(24.dp)
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable {
+                        isLiked = !isLiked
+                        vm.updateHerb(herbEntity.copy(isLiked = isLiked))
+                    }
+                    .size(24.dp)
             )
         }
 
-        Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(4.dp).clip(RoundedCornerShape(16.dp)).background(
-            white).padding(8.dp)) {
-            Text(text = herbEntity.name, style = Typography.titleSmall, softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Column(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(4.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                    white
+                )
+                .padding(8.dp)
+        ) {
+            Text(
+                text = herbEntity.name,
+                style = Typography.titleSmall,
+                softWrap = false,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             Spacer(Modifier.size(2.dp))
             UserLocation(Typography.headlineSmall, 15.dp)
             Spacer(Modifier.size(2.dp))
-            RatingViews(herbEntity.rating.toString(), views = herbEntity.views, 15.dp, Typography.headlineSmall)
+            RatingViews(
+                herbEntity.rating.toString(),
+                views = herbEntity.views,
+                15.dp,
+                Typography.headlineSmall
+            )
         }
     }
 }
@@ -216,10 +358,20 @@ fun HerbCard(herbEntity: HerbEntity, navController: NavController, vm: MainViewM
 @Composable
 fun RatingViews(rating: String, views: Int, iconSize: Dp, textStyle: TextStyle) {
     Row(modifier = Modifier.wrapContentHeight(), verticalAlignment = Alignment.CenterVertically) {
-        Image(rememberAsyncImagePainter(R.drawable.ico_star),contentDescription = null, modifier = Modifier.size(iconSize))
+        Image(
+            rememberAsyncImagePainter(R.drawable.ico_star),
+            contentDescription = null,
+            modifier = Modifier.size(iconSize)
+        )
         Spacer(Modifier.size(2.dp))
-        Text(rating, style = textStyle.copy(color = black),)
-        Text(" | " + views.toString() + " " + stringResource(R.string.views), style = textStyle, softWrap = false, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(rating, style = textStyle.copy(color = black))
+        Text(
+            " | " + views.toString() + " " + stringResource(R.string.views),
+            style = textStyle,
+            softWrap = false,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -236,7 +388,11 @@ fun SignsChooseList(vm: MainViewModel) {
             .fillMaxWidth()
             .padding(16.dp)
     )
-    LazyRow(modifier = Modifier.fillMaxWidth().padding(start = 14.dp)) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 14.dp)
+    ) {
         items(signsList) {
             SignItem(it, vm)
         }
@@ -244,8 +400,11 @@ fun SignsChooseList(vm: MainViewModel) {
 
     if (!signsList.first().isChoose) {
         Spacer(Modifier.size(16.dp))
-        LazyHorizontalGrid (
-            modifier = Modifier.fillMaxWidth().height(expandedAnimation).nestedScroll(rememberNestedScrollInteropConnection()),
+        LazyHorizontalGrid(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(expandedAnimation)
+                .nestedScroll(rememberNestedScrollInteropConnection()),
             rows = GridCells.Fixed(5),
         ) {
             items(elements) {
@@ -254,7 +413,10 @@ fun SignsChooseList(vm: MainViewModel) {
         }
         Spacer(Modifier.size(16.dp))
 
-        PrimaryButton(text = stringResource(R.string.search), modifier = Modifier.padding(horizontal = 16.dp)) {
+        PrimaryButton(
+            text = stringResource(R.string.search),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
             vm.search()
         }
     }
@@ -270,11 +432,14 @@ fun ElementItem(element: ElementEntity, vm: MainViewModel) {
         softWrap = false,
         overflow = TextOverflow.Ellipsis,
         style = Typography.bodyMedium,
-        modifier = Modifier.width(180.dp)
+        modifier = Modifier
+            .width(180.dp)
             .padding(horizontal = 16.dp, vertical = 6.dp)
-            .border(1.5.dp, borderColor, CircleShape).clickable {
+            .border(1.5.dp, borderColor, CircleShape)
+            .clickable {
                 vm.chooseElement(element.copy(isChoose = !element.isChoose))
-            }.padding(12.dp),
+            }
+            .padding(12.dp),
         textAlign = TextAlign.Center
     )
 }
@@ -309,16 +474,24 @@ fun SignItem(item: Sign, vm: MainViewModel) {
             modifier = Modifier.size(16.dp)
         )
         Spacer(Modifier.size(6.dp))
-        Text(text = if (item.selectedElement == null) item.title else item.selectedElement!!.title, style = Typography.bodyLarge, color = itemColor)
+        Text(
+            text = if (item.selectedElement == null) item.title else item.selectedElement!!.title,
+            style = Typography.bodyLarge,
+            color = itemColor
+        )
     }
 }
 
 @Composable
 fun MainSearch(vm: MainViewModel) {
-    var searchInput by remember { mutableStateOf("") }
+    val searchVM = vm.searchEntry.collectAsState()
+
+    var searchInput by remember { mutableStateOf(searchVM.value) }
     val context = LocalContext.current
     val localFocusManager = LocalFocusManager.current
-    vm.search()
+    if (searchVM.value.isEmpty()) {
+        searchInput = ""
+    }
 
     TextField(
         modifier = Modifier
@@ -330,7 +503,8 @@ fun MainSearch(vm: MainViewModel) {
         onValueChange = {
             searchInput = it
             vm.searchEntry.value = it
-                        },
+            vm.search()
+        },
         shape = CircleShape,
         textStyle = Typography.labelMedium,
         colors = TextFieldDefaults.colors(
@@ -374,7 +548,7 @@ fun MainSearch(vm: MainViewModel) {
 }
 
 @Composable
-fun MainTitle(navController: NavController, viewModel: AuthViewModel) {
+fun MainTitle(navController: NavController, viewModel: AuthViewModel, mainVM: MainViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -383,7 +557,6 @@ fun MainTitle(navController: NavController, viewModel: AuthViewModel) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column() {
-            val userName = viewModel.currentUser
             Text(
                 text = stringResource(R.string.hello) + " ${viewModel.currentUser?.displayName ?: "Загрузка..."}!",
                 style = Typography.titleLarge
@@ -391,8 +564,26 @@ fun MainTitle(navController: NavController, viewModel: AuthViewModel) {
             Spacer(Modifier.size(8.dp))
             UserLocation(style = Typography.headlineMedium, 20.dp)
         }
-        AccountImage {
-            navController.navigate(Routes.Account.route)
+        val searchList = mainVM.searchList.collectAsState()
+        if (!searchList.value.isNullOrEmpty()) {
+            AccountImage {
+                navController.navigate(Routes.Account.route)
+            }
+        } else {
+            val context = LocalContext.current
+            Image(
+                rememberAsyncImagePainter(R.drawable.ico_back, context.imageLoader()),
+                contentDescription = "back",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape)
+                    .background(button)
+                    .clickable {
+                        mainVM.clearSearch()
+                    }
+                    .padding(10.dp)
+            )
         }
     }
 }
@@ -402,7 +593,9 @@ fun AccountImage(onClick: () -> Unit) {
     Image(
         painter = painterResource(R.drawable.img_user_photo),
         contentScale = ContentScale.Fit,
-        modifier = Modifier.size(60.dp).clickable { onClick() },
+        modifier = Modifier
+            .size(60.dp)
+            .clickable { onClick() },
         contentDescription = null
     )
 }

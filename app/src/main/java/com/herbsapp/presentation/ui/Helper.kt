@@ -20,6 +20,13 @@ data class Determiner(
     var selectVariant: String? = null
 )
 
+data class DeterminerImaged(
+    val title: String,
+    val variants: List<String>,
+    val images: List<Int>,
+    var selectVariant: String? = null
+)
+
 sealed class SignValue {
     object All: SignValue()
     object Class: SignValue()

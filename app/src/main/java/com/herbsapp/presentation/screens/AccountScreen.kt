@@ -51,6 +51,7 @@ import com.herbsapp.data.room.entity.AccountEntity
 import com.herbsapp.presentation.ui.CustomTextField
 import com.herbsapp.presentation.ui.CustomToast
 import com.herbsapp.presentation.ui.PrimaryButton
+import com.herbsapp.presentation.ui.Resource
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
@@ -131,16 +132,37 @@ fun AccountBody(vm: AuthViewModel) {
     }
     Spacer(Modifier.size(32.dp))
 
+    val loadingState = remember { mutableStateOf(false) }
     ChangeAccountSetting(value = newMail, title = stringResource(R.string.change_mail), titleForTextFiled = stringResource(R.string.new_mail)) {
         if (!newMail.value.isNullOrEmpty() && newMail.value.contains("@") && newMail.value.substringAfter("@").contains(".")) {
             vm.changeEmail(newMail.value)
-            context.CustomToast(context.getString(R.string.change_mail_apply))
-            newMail.value = ""
+
         } else {
             context.CustomToast(context.getString(R.string.empty_text_field))
         }
     }
+    val changeMailState = vm.changeMailState.collectAsState()
+    when(changeMailState.value) {
+        is Resource.Loading -> {
+            loadingState.value = true
+        }
+        is  Resource.Success -> {
+            loadingState.value = false
+            context.CustomToast(context.getString(R.string.check_inbox))
+            newMail.value = ""
+        }
+        is Resource.Failure -> {
+            println((changeMailState.value as Resource.Failure).exception.message)
+            loadingState.value = false
+            (changeMailState.value as Resource.Failure).exception.message?.let { context.CustomToast(it) }
+        }
+        null -> {
 
+        }
+    }
+    if (loadingState.value) {
+        LoadingDialog(loadingState)
+    }
 
 }
 

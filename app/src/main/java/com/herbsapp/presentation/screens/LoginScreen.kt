@@ -102,11 +102,15 @@ fun LoginScreen(navController: NavController = rememberNavController()) {
             }
         }
 
+        val loadingState = remember { mutableStateOf(false) }
         when(login.value) {
-            is Resource.Loading -> {}
+            is Resource.Loading -> {
+                loadingState.value = true
+            }
             is Resource.Success -> {
                 LaunchedEffect(Unit) {
                     context.CustomToast(context.getString(R.string.login_title) + " " + vm.currentUser!!.displayName)
+                    loadingState.value = false
                     navController.navigate(Routes.Main.route) {
                         popUpTo(Routes.Main.route) {
                             inclusive = true
@@ -118,9 +122,15 @@ fun LoginScreen(navController: NavController = rememberNavController()) {
                 }
             }
             is Resource.Failure -> {
-                context.CustomToast(wrongText)
+                loadingState.value = false
+                LaunchedEffect(Unit) {
+                    context.CustomToast(wrongText)
+                }
             }
             null -> {}
+        }
+        if (loadingState.value) {
+            LoadingDialog(loadingState)
         }
     }
 }

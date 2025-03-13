@@ -1,4 +1,4 @@
-package com.example.herbsapp
+package com.herbsapp
 
 import org.junit.Test
 

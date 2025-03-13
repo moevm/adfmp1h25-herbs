@@ -2,12 +2,14 @@ package com.herbsapp.presentation.viewmodels
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.herbsapp.R
 import com.herbsapp.data.repository.AppRepository
 import com.herbsapp.data.room.entity.HerbEntity
 import com.herbsapp.presentation.ui.Determiner
+import com.herbsapp.presentation.ui.DeterminerImaged
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -15,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class DeterminerViewModel(repository: AppRepository, context: Context) : ViewModel() {
 
-    val _allHerbs = MutableStateFlow<List<HerbEntity>>(mutableStateListOf())
+    private val _allHerbs = MutableStateFlow<List<HerbEntity>>(mutableStateListOf())
 
     val resultHerbs: MutableStateFlow<MutableList<HerbEntity>> = MutableStateFlow(mutableListOf())
     val currentHerbID = MutableStateFlow<Int>(0)
@@ -27,15 +29,6 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
                     context.getString(R.string.determiner_question_1_var1),
                     context.getString(R.string.determiner_question_1_var2),
                     context.getString(R.string.determiner_question_1_var3),
-                ),
-                null
-            ),
-            Determiner(
-                context.getString(R.string.determiner_question_2),
-                listOf(
-                    context.getString(R.string.determiner_question_2_var1),
-                    context.getString(R.string.determiner_question_2_var2),
-                    context.getString(R.string.determiner_question_2_var3),
                 ),
                 null
             ),
@@ -59,6 +52,42 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
         )
     )
 
+    val determinerListWithImages = MutableStateFlow(
+        mutableStateListOf<DeterminerImaged>(
+            DeterminerImaged(
+                context.getString(R.string.determiner_question_5),
+                listOf(
+                    context.getString(R.string.determiner_question_5_var1),
+                    context.getString(R.string.determiner_question_5_var2),
+                    context.getString(R.string.determiner_question_5_var3),
+                    context.getString(R.string.determiner_question_5_var4),
+                ),
+                listOf(
+                    R.drawable.img_leaf_shape_1,
+                    R.drawable.img_leaf_shape_2,
+                    R.drawable.img_leaf_shape_3,
+                    R.drawable.img_leaf_shape_4,
+                ),
+                null
+            ),
+            DeterminerImaged(
+                context.getString(R.string.determiner_question_6),
+                listOf(
+                    context.getString(R.string.determiner_question_6_var1),
+                    context.getString(R.string.determiner_question_6_var2),
+                    context.getString(R.string.determiner_question_6_var3),
+                    context.getString(R.string.determiner_question_6_var4),
+                ),
+                listOf(
+                    R.drawable.img_leaf_veinig_1,
+                    R.drawable.img_leaf_veinig_2,
+                    R.drawable.img_leaf_veinig_3,
+                    R.drawable.img_leaf_veinig_4,
+                ),
+                null
+            ),
+        ))
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             repository.getHerbs().collect {
@@ -67,11 +96,28 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
         }
     }
 
+    fun clearSelect() {
+        determinerList.update {
+            it.apply { replaceAll { if (it.selectVariant != null)  it.copy(selectVariant = null) else it } }
+        }
+        determinerListWithImages.update {
+            it.apply { replaceAll { if (it.selectVariant != null)  it.copy(selectVariant = null) else it } }
+        }
+        currentHerbID.value = 0
+        resultHerbs.value = mutableListOf()
+    }
+
     fun nextHerb(onEndList: () -> Unit) {
+        println("id" + currentHerbID.value)
+        println("resultHerbs.value.size" + resultHerbs.value.size)
         if (resultHerbs.value.size > currentHerbID.value + 1) {
             currentHerbID.value++
+            println("after id" + currentHerbID.value)
         } else {
             determinerList.update {
+                it.apply { replaceAll { it.copy(selectVariant = null) } }
+            }
+            determinerListWithImages.update {
                 it.apply { replaceAll { it.copy(selectVariant = null) } }
             }
             onEndList()
@@ -87,17 +133,39 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
             determinerList.update {
                 newList
             }
+        }
+    }
 
+    fun choose(determiner: DeterminerImaged, variant: String?) {
+        viewModelScope.launch {
+            val newList = determinerListWithImages.value
+            newList.replaceAll { if (it.title == determiner.title) it.copy(selectVariant = variant) else it }
+
+            determinerListWithImages.update {
+                newList
+            }
         }
     }
 
     fun getHerbByParams() {
         var newList = mutableListOf<HerbEntity>()
-        determinerList.value.dropLast(0).forEach { determiner ->
-            newList += _allHerbs.value.filter { it.description.contains(determiner.selectVariant!!, true) }
-            newList += _allHerbs.value.filter { it.title.contains(determiner.selectVariant!!, true) }
-            println(newList)
+        determinerList.value.dropLast(1).forEach { determiner ->
+            newList += _allHerbs.value.filter { it.description.contains(determiner.selectVariant!!.drop(5), true) }
         }
+        if (determinerList.value.last().selectVariant == determinerList.value.last().variants.first()) {
+            newList += _allHerbs.value.filter { it.description.contains("запах", true) }.toMutableList()
+        }
+        determinerListWithImages.value.forEach { determiner ->
+            if (!determiner.selectVariant.isNullOrEmpty()) {
+                newList = newList.filter {
+                    it.description.contains(
+                        determiner.selectVariant!!.drop(5),
+                        true
+                    )
+                }.toMutableList()
+            }
+        }
+
         resultHerbs.value = newList.toSet().toMutableList()
     }
 

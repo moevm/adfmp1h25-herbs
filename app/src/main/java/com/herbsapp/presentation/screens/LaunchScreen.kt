@@ -33,6 +33,7 @@ import com.herbsapp.presentation.ui.PrimaryButton
 import com.herbsapp.presentation.ui.theme.Typography
 import com.herbsapp.presentation.ui.theme.black
 import com.herbsapp.presentation.ui.theme.gray
+import com.herbsapp.presentation.ui.theme.primary
 import com.herbsapp.presentation.viewmodels.AuthViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.androidx.compose.koinViewModel
@@ -47,8 +48,8 @@ fun LaunchScreen(navController: NavController = rememberNavController()) {
     if (vm.currentUser != null) {
         loadingDialogState.value = true
         LaunchedEffect(Unit) {
-            loadingDialogState.value = false
             context.CustomToast(context.getString(R.string.login_title) + " " + vm.currentUser!!.displayName)
+            loadingDialogState.value = false
             navController.navigate(Routes.Main.route) {
                 popUpTo(Routes.Launch.route) {
                     inclusive = true
@@ -82,6 +83,14 @@ fun LaunchScreen(navController: NavController = rememberNavController()) {
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
         ) {
+            Text(
+                text = stringResource(R.string.app_name),
+                style = Typography.displayMedium,
+                color = primary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
             Text(
                 text = stringResource(R.string.launch_title),
                 style = Typography.displayMedium,
