@@ -2,6 +2,7 @@ package com.herbsapp.presentation.screens
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,6 +68,7 @@ import com.herbsapp.R
 import com.herbsapp.data.room.entity.ElementEntity
 import com.herbsapp.data.room.entity.HerbEntity
 import com.herbsapp.presentation.ui.PrimaryButton
+import com.herbsapp.presentation.ui.RegisterDialog
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.Sign
 import com.herbsapp.presentation.ui.imageLoader
@@ -80,12 +83,11 @@ import com.herbsapp.presentation.viewmodels.AuthViewModel
 import com.herbsapp.presentation.viewmodels.MainViewModel
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(showBackground = true, backgroundColor = 0xFFFAF9F9)
 @Composable
-fun MainScreen(navController: NavController = rememberNavController()) {
+fun MainScreen(navController: NavController = rememberNavController(), vmAuth: AuthViewModel) {
     val vm = koinViewModel<MainViewModel>()
-    val vmAuth = koinViewModel<AuthViewModel>()
     val list = vm.herbsList.collectAsState()
+    LaunchedEffect(Unit) { vm.getData() }
 
     LazyColumn(
         Modifier
@@ -104,7 +106,7 @@ fun MainScreen(navController: NavController = rememberNavController()) {
             Filter(vm)
 
             Spacer(Modifier.size(16.dp))
-            SearchResult(navController, vm)
+            SearchResult(navController, vm, vmAuth)
 
             Text(
                 text = stringResource(R.string.watch_more),
@@ -262,7 +264,7 @@ fun HerbHorizontalCard(herbEntity: HerbEntity, navController: NavController) {
 }
 
 @Composable
-fun SearchResult(navController: NavController, viewModel: MainViewModel) {
+fun SearchResult(navController: NavController, viewModel: MainViewModel, authVm: AuthViewModel) {
     val list = viewModel.searchList.collectAsState()
     if (!list.value.isNullOrEmpty()) {
         LazyRow(
@@ -271,7 +273,7 @@ fun SearchResult(navController: NavController, viewModel: MainViewModel) {
                 .padding(start = 14.dp)
         ) {
             items(list.value) {
-                HerbCard(it, navController, viewModel)
+                HerbCard(it, navController, viewModel, authVm)
             }
         }
     } else {
@@ -291,12 +293,17 @@ fun HerbCard(
     herbEntity: HerbEntity,
     navController: NavController,
     vm: MainViewModel,
+    authVm: AuthViewModel,
     isLikable: Boolean = true
 ) {
     var isLiked by remember { mutableStateOf(herbEntity.isLiked) }
 
     val context = LocalContext.current
     val likedColor by animateColorAsState(if (isLiked) primary else gray)
+
+    val isDialogShow = remember { mutableStateOf(false) }
+    RegisterDialog(isDialogShow, navController, authVm)
+
     Box(
         modifier = Modifier
             .padding(horizontal = 8.dp)
@@ -311,14 +318,18 @@ fun HerbCard(
         )
         if (isLikable) {
             Icon(
-                rememberAsyncImagePainter(R.drawable.ico_like),
+                rememberAsyncImagePainter(if (isLiked) R.drawable.ico_like else R.drawable.ico_like_stroked),
                 tint = likedColor,
                 contentDescription = "like",
                 modifier = Modifier
                     .padding(8.dp)
                     .clickable {
-                        isLiked = !isLiked
-                        vm.updateHerb(herbEntity.copy(isLiked = isLiked))
+                        if (!authVm.isGuest(context)) {
+                            isLiked = !isLiked
+                            vm.updateHerb(herbEntity.copy(isLiked = isLiked))
+                        } else {
+                            isDialogShow.value = true
+                        }
                     }
                     .size(24.dp)
             )
@@ -379,7 +390,7 @@ fun RatingViews(rating: String, views: Int, iconSize: Dp, textStyle: TextStyle) 
 fun SignsChooseList(vm: MainViewModel) {
     val signsList by vm.signsList.collectAsState()
     val elements by vm.elementsList.collectAsState()
-    val expandedAnimation by animateDpAsState(if (!signsList.first().isChoose) 270.dp else 0.dp)
+    val expandedAnimation by animateDpAsState(if (!signsList.first().isChoose) 220.dp else 0.dp)
 
     Text(
         text = stringResource(R.string.sign_choose_title),
@@ -405,7 +416,7 @@ fun SignsChooseList(vm: MainViewModel) {
                 .fillMaxWidth()
                 .height(expandedAnimation)
                 .nestedScroll(rememberNestedScrollInteropConnection()),
-            rows = GridCells.Fixed(5),
+            rows = GridCells.Fixed(4),
         ) {
             items(elements) {
                 ElementItem(it, vm)
@@ -565,7 +576,9 @@ fun MainTitle(navController: NavController, viewModel: AuthViewModel, mainVM: Ma
             UserLocation(style = Typography.headlineMedium, 20.dp)
         }
         val searchList = mainVM.searchList.collectAsState()
-        if (!searchList.value.isNullOrEmpty()) {
+        val searchEntry = mainVM.searchEntry.collectAsState()
+        val signs = mainVM.signsList.collectAsState()
+        if (!searchList.value.isNullOrEmpty() && (searchEntry.value.isNotBlank() || signs.value.first().isChoose)) {
             AccountImage {
                 navController.navigate(Routes.Account.route)
             }

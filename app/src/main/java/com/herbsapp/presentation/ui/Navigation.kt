@@ -45,19 +45,21 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun Navigation(navHostController: NavHostController) {
+    val authVm = koinViewModel<AuthViewModel>()
     val determinerVm = koinViewModel<DeterminerViewModel>()
     NavHost(navController = navHostController, startDestination = Routes.Launch.route) {
-        composable(Routes.Launch.route) { LaunchScreen(navController = navHostController) }
-        composable(Routes.Login.route) { LoginScreen(navController = navHostController) }
-        composable(Routes.Register.route) { RegisterScreen(navController = navHostController) }
-        composable(Routes.Main.route) { MainScreen(navController = navHostController) }
-        composable(Routes.Favourites.route) { FavouritesScreen(navController = navHostController) }
+        composable(Routes.Launch.route) { LaunchScreen(navController = navHostController, authVm) }
+        composable(Routes.Login.route) { LoginScreen(navController = navHostController, authVm) }
+        composable(Routes.Register.route) { RegisterScreen(navController = navHostController, authVm) }
+        composable(Routes.Main.route) { MainScreen(navController = navHostController, authVm) }
+        composable(Routes.Favourites.route) { FavouritesScreen(navController = navHostController, authVm) }
         composable(Routes.Determiner.route) { DeterminerScreen(navController = navHostController, determinerVm) }
-        composable(Routes.Account.route) { AccountScreen(navController = navHostController) }
+        composable(Routes.Account.route) { AccountScreen(navController = navHostController, authVm) }
         composable(Routes.FlowerInfo.route + "/{id}") { entry ->
             FlowerInfoScreen(
                 navController = navHostController,
-                id = entry.arguments!!.getString("id")!!.toInt()
+                id = entry.arguments!!.getString("id")!!.toInt(),
+                authVm
             )
         }
         composable(Routes.Description.route + "/{id}") { entry ->
@@ -101,10 +103,14 @@ fun BottomNavBar(navController: NavHostController = rememberNavController()) {
                 ),
                 selected = currentRoute == navItem.route,
                 onClick = {
-                    navController.navigate(navItem.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    if (navItem.route != currentRoute) {
+                        navController.navigate(navItem.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 },
                 icon = {
@@ -140,7 +146,7 @@ object NavBarItems {
             route = Routes.Main.route
         ),
         BottomBarItem(
-            image = R.drawable.ico_like,
+            image = R.drawable.ico_like_stroked,
             route = Routes.Favourites.route
         ),
         BottomBarItem(

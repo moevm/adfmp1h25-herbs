@@ -26,7 +26,11 @@ data class HerbEntity(
     val family: String,
     val taste: String,
     val genus: String,
+    val veining: String,
+    val shape: String,
 
+    @TypeConverters(Converters::class)
+    val likedAccountsUIDList: List<String> = listOf(),
     val isLiked: Boolean,
 )
 

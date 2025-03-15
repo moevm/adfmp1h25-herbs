@@ -1,5 +1,6 @@
 package com.herbsapp.presentation.viewmodels
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.currentComposer
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
+import com.herbsapp.R
 import com.herbsapp.data.repository.AppRepository
 import com.herbsapp.presentation.ui.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,7 @@ class AuthViewModel(private val repository: AppRepository): ViewModel() {
     val currentUser: FirebaseUser?
         get() = repository.currentUser
 
-    val name = MutableStateFlow(currentUser?.displayName)
+//    val name = MutableStateFlow(currentUser?.displayName)
 
     init {
         if (repository.currentUser != null) {
@@ -35,9 +37,16 @@ class AuthViewModel(private val repository: AppRepository): ViewModel() {
         }
     }
 
+
     fun loginUser(email: String, password: String) = viewModelScope.launch {
         _login.value = Resource.Loading
         val result = repository.login(email, password)
+        _login.value = result
+    }
+
+    fun loginByGuest(context: Context) = viewModelScope.launch {
+        _login.value = Resource.Loading
+        val result = repository.login(context.getString(R.string.guest_login), context.getString(R.string.guest_password))
         _login.value = result
     }
 
@@ -62,4 +71,7 @@ class AuthViewModel(private val repository: AppRepository): ViewModel() {
         _login.value = null
         _register.value = null
     }
+
+    fun isGuest(context: Context) = currentUser!!.uid == context.getString(R.string.guest_uid)
+
 }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
@@ -32,11 +33,15 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import com.herbsapp.R
 import com.herbsapp.presentation.ui.theme.Typography
 import com.herbsapp.presentation.ui.theme.black
@@ -44,6 +49,7 @@ import com.herbsapp.presentation.ui.theme.border
 import com.herbsapp.presentation.ui.theme.gray
 import com.herbsapp.presentation.ui.theme.primary
 import com.herbsapp.presentation.ui.theme.white
+import com.herbsapp.presentation.viewmodels.AuthViewModel
 import es.dmoral.toasty.Toasty
 
 @Composable
@@ -147,6 +153,28 @@ fun CustomTextField(
             }
         },
     )
+}
+
+@Composable
+fun RegisterDialog(isExpandState: MutableState<Boolean>, navController: NavController, authViewModel: AuthViewModel) {
+
+    if (isExpandState.value) {
+        Dialog(onDismissRequest = { isExpandState.value = false }, properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)) {
+            Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(
+                white).padding(horizontal = 32.dp, vertical = 16.dp)) {
+                Text(text = stringResource(R.string.register_please), style = Typography.headlineLarge.copy(color = black), textAlign = TextAlign.Center)
+                Spacer(Modifier.size(32.dp))
+
+                PrimaryButton(text = stringResource(R.string.loginOrRegister)) {
+                    isExpandState.value = false
+                    authViewModel.logout()
+                    navController.navigate(Routes.Launch.route) {
+                        popUpTo(0)
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun Context.CustomToast(text: String) = Toasty.custom(this, text, this.resources.getDrawable(R.drawable.ico_home), primary.toArgb(), white.toArgb(), Toasty.LENGTH_SHORT, false, true).show()

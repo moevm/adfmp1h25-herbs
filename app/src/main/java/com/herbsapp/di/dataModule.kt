@@ -3,6 +3,7 @@ package com.herbsapp.di
 import android.content.Context
 import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.herbsapp.data.repository.AppRepository
 import com.herbsapp.data.room.RoomDB
 import com.herbsapp.data.room.dao.RoomDao

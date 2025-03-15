@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,8 +25,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +65,7 @@ import com.herbsapp.presentation.ui.Determiner
 import com.herbsapp.presentation.ui.DeterminerImaged
 import com.herbsapp.presentation.ui.PrimaryButton
 import com.herbsapp.presentation.ui.PrimaryButtonGray
+import com.herbsapp.presentation.ui.ResultHerb
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
@@ -77,7 +81,9 @@ fun DeterminerScreen(
     navController: NavController = rememberNavController(),
     vm: DeterminerViewModel
 ) {
-
+    LaunchedEffect(Unit) {
+        vm.updateData()
+    }
     val determiner = vm.determinerList.collectAsStateWithLifecycle()
     val determinerImaged = vm.determinerListWithImages.collectAsStateWithLifecycle()
     val isComplete = remember { mutableStateOf(false) }
@@ -88,7 +94,7 @@ fun DeterminerScreen(
             .fillMaxSize()
     ) {
         Spacer(Modifier.size(48.dp))
-        TitileWithBackButton(stringResource(R.string.determiner), navController)
+        TitileWithBackButtonDeterminer(stringResource(R.string.determiner), navController, vm)
 
         if (!isComplete.value) {
             BodyQuiz(determiner.value, determinerImaged.value, vm)
@@ -116,8 +122,52 @@ fun DeterminerScreen(
 }
 
 @Composable
+fun TitileWithBackButtonDeterminer(title: String, navController: NavController, vm: DeterminerViewModel) {
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = title,
+            style = Typography.titleLarge,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+        BackButtonPrimaryDeterminer(
+            modifier = Modifier.padding(end = 16.dp),
+            navController = navController,
+            vm
+        )
+    }
+}
+
+@Composable
+fun BackButtonPrimaryDeterminer(modifier: Modifier = Modifier, navController: NavController, vm: DeterminerViewModel) {
+    val context = LocalContext.current
+    val result = vm.resultHerbs.collectAsState()
+    Icon(
+        rememberAsyncImagePainter(R.drawable.ico_back, context.imageLoader()),
+        contentDescription = "back",
+        tint = gray,
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(primary.copy(alpha = 0.2f))
+            .clickable {
+                if (result.value.isNullOrEmpty()) {
+                    navController.navigate(Routes.Main.route)
+                } else {
+                    vm.clearSelect()
+                    navController.navigate(Routes.Determiner.route)
+                }
+            }
+            .padding(8.dp)
+    )
+}
+
+@Composable
 fun BodyResult(
-    result: List<HerbEntity>,
+    result: MutableList<ResultHerb>,
     vm: DeterminerViewModel,
     isComplete: MutableState<Boolean>
 ) {
@@ -135,6 +185,9 @@ fun BodyResult(
         if (!result.isNullOrEmpty()) {
             val currentId = vm.currentHerbID.collectAsState()
             val currentHerb = result[currentId.value]
+
+            Text(text = stringResource(R.string.find_herbs).replace("_", result.size.toString()), style = Typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.size(16.dp))
 
             Text(
                 text = buildAnnotatedString {
@@ -155,13 +208,13 @@ fun BodyResult(
                             fontWeight = FontWeight.Bold
                         )
                     ) {
-                        append(currentHerb.name + " ?")
+                        append(currentHerb.herb.name + " ?")
                     }
                 },
             )
             Spacer(Modifier.size(16.dp))
             Image(
-                rememberAsyncImagePainter(currentHerb.imageURL.first(), context.imageLoader()),
+                rememberAsyncImagePainter(currentHerb.herb.imageURL.first(), context.imageLoader()),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -171,6 +224,8 @@ fun BodyResult(
                         RoundedCornerShape(20.dp)
                     )
             )
+            Spacer(Modifier.size(16.dp))
+            Text(text = stringResource(R.string.similar) + " ${currentHerb.similarPerc}%", style = Typography.headlineLarge, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         } else {
             notFindHerb(vm, isComplete, context)
         }
@@ -295,8 +350,12 @@ fun ContinueButton(
     val context = LocalContext.current
     PrimaryButton(text = stringResource(R.string.continuee)) {
         if (determinerList.filter { it.selectVariant != null } == determinerList && determinerListImg.filter { it.selectVariant != null } == determinerListImg) {
-            vm.getHerbByParams()
-            isComplete.value = true
+            if (determinerList.filter { it.selectVariant!! != "" }.isEmpty() && determinerListImg.filter { it.selectVariant!! != "" }.isEmpty()) {
+                context.CustomToast(text = context.getString(R.string.no_choose_any))
+            } else {
+                vm.getHerbByParams(context.applicationContext)
+                isComplete.value = true
+            }
         } else {
             context.CustomToast(text = context.getString(R.string.determiner_choose_all))
         }
@@ -305,7 +364,7 @@ fun ContinueButton(
 
 @Composable
 fun YesOrNotButtons(
-    herbsEntity: List<HerbEntity>,
+    herbsEntity: List<ResultHerb>,
     vm: DeterminerViewModel,
     isComplete: MutableState<Boolean>,
     navController: NavController
@@ -319,7 +378,7 @@ fun YesOrNotButtons(
     ) {
 
         PrimaryButton(modifier = Modifier.weight(1f), text = stringResource(R.string.yes)) {
-            navController.navigate(Routes.FlowerInfo.route + "/${herbsEntity[currentId.value].id}")
+            navController.navigate(Routes.FlowerInfo.route + "/${herbsEntity[currentId.value].herb.id}")
             vm.clearSelect()
         }
         Spacer(Modifier.size(16.dp))
@@ -333,7 +392,9 @@ fun notFindHerb(vm: DeterminerViewModel, isComplete: MutableState<Boolean>, cont
     vm.nextHerb {
         context.CustomToast(context.getString(R.string.nothing_find))
         isComplete.value = false
-        vm.clearSelect()
+        vm.resultHerbs.value = mutableListOf()
+        vm.currentHerbID.value = 0
+//        vm.clearSelect()
     }
 }
 
@@ -346,7 +407,7 @@ fun QuizField(determiner: Determiner, vm: DeterminerViewModel) {
         items(determiner.variants) {
             QuizVariant(
                 variant = it,
-                isChoose = (it == determiner.selectVariant),
+                isChoose = (it == determiner.selectVariant) || (determiner.selectVariant == "" && it == determiner.variants.last()),
                 determiner = determiner,
                 vm
             )
@@ -361,6 +422,7 @@ fun QuizVariant(
     determiner: Determiner,
     vm: DeterminerViewModel
 ) {
+    val context = LocalContext.current
     var choosed by rememberSaveable { mutableStateOf(isChoose) }
     SideEffect() {
         choosed = isChoose
@@ -372,11 +434,10 @@ fun QuizVariant(
         style = Typography.bodyLarge.copy(textAlign = TextAlign.Center),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        modifier = Modifier
-            .width(120.dp)
+        modifier = Modifier.defaultMinSize(minWidth = 100.dp)
             .padding(8.dp)
             .clickable {
-                vm.choose(determiner = determiner, variant = if (!choosed) variant else null)
+                vm.choose(determiner = determiner, variant = if (!choosed) if (variant == context.getString(R.string.idk)) "" else  variant else null)
             }
             .border(1.dp, borderColor, CircleShape)
             .padding(horizontal = 12.dp, vertical = 10.dp)

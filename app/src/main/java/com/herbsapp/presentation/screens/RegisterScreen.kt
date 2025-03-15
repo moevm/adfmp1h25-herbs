@@ -50,11 +50,9 @@ import com.herbsapp.presentation.ui.theme.white
 import com.herbsapp.presentation.viewmodels.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(showBackground = true, backgroundColor = 0xFFFAF9F9)
 @Composable
-fun RegisterScreen(navController: NavController = rememberNavController()) {
+fun RegisterScreen(navController: NavController = rememberNavController(), vm: AuthViewModel) {
     val context = LocalContext.current
-    val vm = koinViewModel<AuthViewModel>()
 
     Column(
         modifier = Modifier

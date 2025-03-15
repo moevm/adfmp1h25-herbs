@@ -1,5 +1,7 @@
 package com.herbsapp.presentation.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,20 +22,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.herbsapp.R
 import com.herbsapp.data.room.entity.HerbEntity
+import com.herbsapp.presentation.ui.Routes
+import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
+import com.herbsapp.presentation.ui.theme.gray
+import com.herbsapp.presentation.ui.theme.primary
 import com.herbsapp.presentation.viewmodels.FlowerInfoViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DescriptionScreen(navController: NavController, id: Int) {
-    val context = LocalContext.current
     val vm = koinViewModel<FlowerInfoViewModel>()
     vm.getHerbById(id)
     val herb by vm.herb.collectAsState()

@@ -10,16 +10,18 @@ import com.herbsapp.data.repository.AppRepository
 import com.herbsapp.data.room.entity.HerbEntity
 import com.herbsapp.presentation.ui.Determiner
 import com.herbsapp.presentation.ui.DeterminerImaged
+import com.herbsapp.presentation.ui.ResultHerb
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.math.RoundingMode
 
-class DeterminerViewModel(repository: AppRepository, context: Context) : ViewModel() {
+class DeterminerViewModel(val repository: AppRepository, context: Context) : ViewModel() {
 
-    private val _allHerbs = MutableStateFlow<List<HerbEntity>>(mutableStateListOf())
+    private val _allHerbs = MutableStateFlow<List<HerbEntity>>(listOf())
 
-    val resultHerbs: MutableStateFlow<MutableList<HerbEntity>> = MutableStateFlow(mutableListOf())
+    val resultHerbs: MutableStateFlow<MutableList<ResultHerb>> = MutableStateFlow(mutableListOf())
     val currentHerbID = MutableStateFlow<Int>(0)
     val determinerList = MutableStateFlow(
         mutableStateListOf(
@@ -29,6 +31,7 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
                     context.getString(R.string.determiner_question_1_var1),
                     context.getString(R.string.determiner_question_1_var2),
                     context.getString(R.string.determiner_question_1_var3),
+                    context.getString(R.string.idk),
                 ),
                 null
             ),
@@ -38,6 +41,7 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
                     context.getString(R.string.determiner_question_3_var1),
                     context.getString(R.string.determiner_question_3_var2),
                     context.getString(R.string.determiner_question_3_var3),
+                    context.getString(R.string.idk),
                 ),
                 null
             ),
@@ -46,6 +50,7 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
                 listOf(
                     context.getString(R.string.determiner_question_4_var1),
                     context.getString(R.string.determiner_question_4_var2),
+                    context.getString(R.string.idk),
                 ),
                 null
             ),
@@ -57,15 +62,15 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
             DeterminerImaged(
                 context.getString(R.string.determiner_question_5),
                 listOf(
-                    context.getString(R.string.determiner_question_5_var1),
                     context.getString(R.string.determiner_question_5_var2),
                     context.getString(R.string.determiner_question_5_var3),
+                    context.getString(R.string.determiner_question_5_var1),
                     context.getString(R.string.determiner_question_5_var4),
                 ),
                 listOf(
-                    R.drawable.img_leaf_shape_1,
                     R.drawable.img_leaf_shape_2,
                     R.drawable.img_leaf_shape_3,
+                    R.drawable.img_leaf_shape_1,
                     R.drawable.img_leaf_shape_4,
                 ),
                 null
@@ -73,14 +78,14 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
             DeterminerImaged(
                 context.getString(R.string.determiner_question_6),
                 listOf(
-                    context.getString(R.string.determiner_question_6_var1),
                     context.getString(R.string.determiner_question_6_var2),
+                    context.getString(R.string.determiner_question_6_var1),
                     context.getString(R.string.determiner_question_6_var3),
                     context.getString(R.string.determiner_question_6_var4),
                 ),
                 listOf(
-                    R.drawable.img_leaf_veinig_1,
                     R.drawable.img_leaf_veinig_2,
+                    R.drawable.img_leaf_veinig_1,
                     R.drawable.img_leaf_veinig_3,
                     R.drawable.img_leaf_veinig_4,
                 ),
@@ -89,6 +94,10 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
         ))
 
     init {
+        updateData()
+    }
+
+    fun updateData() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.getHerbs().collect {
                 _allHerbs.value = it
@@ -108,18 +117,15 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
     }
 
     fun nextHerb(onEndList: () -> Unit) {
-        println("id" + currentHerbID.value)
-        println("resultHerbs.value.size" + resultHerbs.value.size)
         if (resultHerbs.value.size > currentHerbID.value + 1) {
             currentHerbID.value++
-            println("after id" + currentHerbID.value)
         } else {
-            determinerList.update {
-                it.apply { replaceAll { it.copy(selectVariant = null) } }
-            }
-            determinerListWithImages.update {
-                it.apply { replaceAll { it.copy(selectVariant = null) } }
-            }
+//            determinerList.update {
+//                it.apply { replaceAll { it.copy(selectVariant = null) } }
+//            }
+//            determinerListWithImages.update {
+//                it.apply { replaceAll { it.copy(selectVariant = null) } }
+//            }
             onEndList()
         }
     }
@@ -147,26 +153,58 @@ class DeterminerViewModel(repository: AppRepository, context: Context) : ViewMod
         }
     }
 
-    fun getHerbByParams() {
+    fun getHerbByParams(context: Context) {
+        resultHerbs.value = mutableListOf()
         var newList = mutableListOf<HerbEntity>()
-        determinerList.value.dropLast(1).forEach { determiner ->
-            newList += _allHerbs.value.filter { it.description.contains(determiner.selectVariant!!.drop(5), true) }
+
+        if (determinerList.value.first().selectVariant!! != "") {
+            newList += _allHerbs.value.filter { it.mClass.lowercase() == determinerList.value.first().selectVariant!!.lowercase() }
+        }
+
+        if (determinerList.value[1].selectVariant!! != "") {
+            newList += (if (newList.isEmpty()) _allHerbs.value else newList).filter {
+                it.description.contains(
+                    determinerList.value[1].selectVariant!!, true
+                )
+            }.toMutableList()
         }
         if (determinerList.value.last().selectVariant == determinerList.value.last().variants.first()) {
-            newList += _allHerbs.value.filter { it.description.contains("запах", true) }.toMutableList()
+            newList += (if (newList.isEmpty()) _allHerbs.value else newList).filter { it.description.contains("запах", true) }.toMutableList()
         }
+
         determinerListWithImages.value.forEach { determiner ->
-            if (!determiner.selectVariant.isNullOrEmpty()) {
-                newList = newList.filter {
+            if (determiner.selectVariant != "") {
+                newList += (if (newList.isEmpty()) _allHerbs.value else newList).filter {
                     it.description.contains(
-                        determiner.selectVariant!!.drop(5),
+                        determiner.selectVariant!!.take(5),
                         true
                     )
                 }.toMutableList()
             }
         }
 
-        resultHerbs.value = newList.toSet().toMutableList()
+        if (!newList.isNullOrEmpty()) {
+            newList.sortBy { it.id }
+
+            var percent = 1f
+            var prevId = newList.first().id
+            newList.forEach {
+                if (prevId == it.id) {
+                    percent++
+                } else {
+                    resultHerbs.value += ResultHerb(newList.find { it.id == prevId }!!,
+                        ((percent / (determinerList.value.size + determinerListWithImages.value.size)) * 100).toBigDecimal()
+                            .setScale(2, RoundingMode.FLOOR).toFloat()
+                    )
+                    prevId = it.id
+                    percent = 1f
+                }
+            }
+            resultHerbs.value.sortByDescending { it.similarPerc }
+        }
     }
+
+    fun String.isIdkEmpty(context: Context): String =
+        if (this == context.getString(R.string.idk)) "" else this
 
 }

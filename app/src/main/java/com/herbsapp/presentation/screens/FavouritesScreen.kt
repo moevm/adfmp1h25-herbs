@@ -34,12 +34,12 @@ import com.herbsapp.data.room.entity.HerbEntity
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
+import com.herbsapp.presentation.viewmodels.AuthViewModel
 import com.herbsapp.presentation.viewmodels.MainViewModel
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(showBackground = true)
 @Composable
-fun FavouritesScreen(navController: NavController = rememberNavController()) {
+fun FavouritesScreen(navController: NavController = rememberNavController(), authVm: AuthViewModel) {
     val vm = koinViewModel<MainViewModel>()
     val likedHerbs = vm.herbsList.collectAsState()
 
@@ -51,7 +51,7 @@ fun FavouritesScreen(navController: NavController = rememberNavController()) {
 
         if (!likedHerbs.value.isNullOrEmpty()) {
             if (!likedHerbs.value.filter { it.isLiked }.isNullOrEmpty()) {
-                BodyFavourites(likedHerbs.value, navController, vm)
+                BodyFavourites(likedHerbs.value, navController, vm, authVm)
             } else {
                 EmptyFavourites()
             }
@@ -60,7 +60,7 @@ fun FavouritesScreen(navController: NavController = rememberNavController()) {
 }
 
 @Composable
-fun BodyFavourites(herbs: List<HerbEntity>, navController: NavController, vm: MainViewModel) {
+fun BodyFavourites(herbs: List<HerbEntity>, navController: NavController, vm: MainViewModel, authVm: AuthViewModel) {
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -68,7 +68,7 @@ fun BodyFavourites(herbs: List<HerbEntity>, navController: NavController, vm: Ma
         columns = GridCells.Fixed(2)
     ) {
         items(herbs.filter { it.isLiked }) {
-            CardHerbFav(it, navController, vm)
+            CardHerbFav(it, navController, vm, authVm)
         }
 
     }
@@ -88,9 +88,9 @@ fun EmptyFavourites() {
 }
 
 @Composable
-fun CardHerbFav(herbEntity: HerbEntity, navController: NavController, vm: MainViewModel) {
+fun CardHerbFav(herbEntity: HerbEntity, navController: NavController, vm: MainViewModel, authVm: AuthViewModel) {
     Box (Modifier.wrapContentWidth().padding(16.dp)) {
-        HerbCard(herbEntity, navController, vm, isLikable = false)
+        HerbCard(herbEntity, navController, vm, isLikable = false, authVm = authVm)
         CloseButton(Modifier.align(Alignment.TopEnd), herbEntity, vm)
     }
 }

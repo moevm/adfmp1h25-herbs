@@ -1,5 +1,6 @@
 package com.herbsapp.presentation.screens
 
+import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseUser
 import com.herbsapp.R
 import com.herbsapp.presentation.ui.CustomTextField
 import com.herbsapp.presentation.ui.CustomToast
@@ -50,10 +53,8 @@ import com.herbsapp.presentation.ui.theme.white
 import com.herbsapp.presentation.viewmodels.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(showBackground = true, backgroundColor = 0xFFFAF9F9)
 @Composable
-fun LoginScreen(navController: NavController = rememberNavController()) {
-    val vm = koinViewModel<AuthViewModel>()
+fun LoginScreen(navController: NavController = rememberNavController(), vm: AuthViewModel) {
     val login = vm.login.collectAsState()
 
     Column(
@@ -92,7 +93,7 @@ fun LoginScreen(navController: NavController = rememberNavController()) {
 
         val context = LocalContext.current
         val emptyText = stringResource(R.string.empty_text_field)
-        val wrongText = stringResource(R.string.wrong_login)
+
 
         PrimaryButton(text = stringResource(R.string.login)) {
             if (inputMail.value.isNotEmpty() && inputMail.value.contains('@') && inputPassword.value.isNotEmpty()) {
@@ -103,34 +104,40 @@ fun LoginScreen(navController: NavController = rememberNavController()) {
         }
 
         val loadingState = remember { mutableStateOf(false) }
-        when(login.value) {
-            is Resource.Loading -> {
-                loadingState.value = true
-            }
-            is Resource.Success -> {
-                LaunchedEffect(Unit) {
-                    context.CustomToast(context.getString(R.string.login_title) + " " + vm.currentUser!!.displayName)
-                    loadingState.value = false
-                    navController.navigate(Routes.Main.route) {
-                        popUpTo(Routes.Main.route) {
-                            inclusive = true
-                        }
-                        popUpTo(Routes.Launch.route) {
-                            inclusive = true
-                        }
-                    }
-                }
-            }
-            is Resource.Failure -> {
-                loadingState.value = false
-                LaunchedEffect(Unit) {
-                    context.CustomToast(wrongText)
-                }
-            }
-            null -> {}
-        }
+        LoginWait(login, loadingState, context, navController, vm)
         if (loadingState.value) {
             LoadingDialog(loadingState)
         }
+    }
+}
+
+@Composable
+fun LoginWait(login: State<Resource<FirebaseUser>?>, loadingState: MutableState<Boolean>, context: Context, navController: NavController, vm: AuthViewModel) {
+    val wrongText = stringResource(R.string.wrong_login)
+    when(login.value) {
+        is Resource.Loading -> {
+            loadingState.value = true
+        }
+        is Resource.Success -> {
+            LaunchedEffect(Unit) {
+                loadingState.value = false
+                navController.navigate(Routes.Main.route) {
+                    popUpTo(Routes.Main.route) {
+                        inclusive = true
+                    }
+                    popUpTo(Routes.Launch.route) {
+                        inclusive = true
+                    }
+                }
+                context.CustomToast(context.getString(R.string.login_title) + " " + vm.currentUser!!.displayName)
+            }
+        }
+        is Resource.Failure -> {
+            loadingState.value = false
+            LaunchedEffect(Unit) {
+                context.CustomToast(wrongText)
+            }
+        }
+        null -> {}
     }
 }

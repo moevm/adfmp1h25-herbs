@@ -40,6 +40,16 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
                 false,
             ),
             Sign(
+                title = applicationContext.getString(R.string.sign_veining),
+                R.drawable.ico_veining,
+                false,
+            ),
+            Sign(
+                title = applicationContext.getString(R.string.sign_shape),
+                R.drawable.ico_shape,
+                false,
+            ),
+            Sign(
                 title = applicationContext.getString(R.string.sign_class),
                 R.drawable.ico_class,
                 false,
@@ -83,14 +93,28 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
     var rootGenusList: SnapshotStateList<ElementEntity> = mutableStateListOf()
     var rootTasteList: SnapshotStateList<ElementEntity> = mutableStateListOf()
     var rootFamilyList: SnapshotStateList<ElementEntity> = mutableStateListOf()
+    var rootVeiningList: SnapshotStateList<ElementEntity> = mutableStateListOf(
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_6_var1), isChoose = false),
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_6_var2), isChoose = false),
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_6_var3), isChoose = false),
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_6_var4), isChoose = false),
+    )
+    var rootShapeList: SnapshotStateList<ElementEntity> = mutableStateListOf(
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_5_var1), isChoose = false),
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_5_var2), isChoose = false),
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_5_var3), isChoose = false),
+        ElementEntity(id = 0, signId = 0, title = applicationContext.getString(R.string.determiner_question_5_var4), isChoose = false),
+    )
 
     fun getData() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.getHerbs().collect { herbs ->
-                if (!sortHerbs.value.isNullOrEmpty()) {
-                    _herbsList.value = sortHerbs.value!!.getSortValue().sortedBySortValue(herbs)
-                } else {
-                    _herbsList.value = herbs
+                if (_herbsList.value != herbs) {
+                    if (!sortHerbs.value.isNullOrEmpty()) {
+                        _herbsList.value = sortHerbs.value!!.getSortValue().sortedBySortValue(herbs)
+                    } else {
+                        _herbsList.value = herbs
+                    }
                 }
             }
 
@@ -171,18 +195,19 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
         var taste: String? = null
         var genus: String? = null
         var family: String? = null
+        var veining: String? = null
+        var shape: String? = null
 
         signsList.value.forEach {
             if (it.selectedElement != null) {
                 when (it.getSignValueBySign()) {
                     SignValue.All -> {}
                     SignValue.Class -> classs = it.selectedElement!!.title
-
                     SignValue.Genus -> genus = it.selectedElement!!.title
-
                     SignValue.Taste -> taste = it.selectedElement!!.title
-
                     SignValue.Family -> family = it.selectedElement!!.title
+                    SignValue.Veining -> veining = it.selectedElement!!.title
+                    SignValue.Shape -> shape = it.selectedElement!!.title
                 }
             }
         }
@@ -192,6 +217,8 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
                     && it.mClass == (classs ?: it.mClass)
                     && it.taste == (taste ?: it.taste)
                     && it.genus == (genus ?: it.genus)
+                    && it.veining == (veining ?: it.veining)
+                    && it.shape == (shape ?: it.shape)
                     && it.family == (family ?: it.family)))))
         }
     }
@@ -203,6 +230,8 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
             SignValue.Genus -> _elementsList.value = rootGenusList
             SignValue.Taste -> _elementsList.value = rootTasteList
             SignValue.Family -> _elementsList.value = rootFamilyList
+            SignValue.Veining -> _elementsList.value = rootVeiningList
+            SignValue.Shape -> _elementsList.value = rootShapeList
         }
 
         if (sign.selectedElement != null) {
@@ -227,6 +256,8 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
             applicationContext.getString(R.string.sign_genus) -> SignValue.Genus
             applicationContext.getString(R.string.sign_taste) -> SignValue.Taste
             applicationContext.getString(R.string.sign_family) -> SignValue.Family
+            applicationContext.getString(R.string.sign_veining) -> SignValue.Veining
+            applicationContext.getString(R.string.sign_shape) -> SignValue.Shape
             else -> SignValue.All
         }
 
@@ -238,7 +269,11 @@ class MainViewModel(val applicationContext: Context, val repository: AppReposito
 
     fun updateHerb(herbEntity: HerbEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateHerb(herbEntity)
+            if (herbEntity.isLiked && !herbEntity.likedAccountsUIDList.contains(repository.currentUser!!.uid)) {
+                repository.updateHerb(herbEntity.copy(likedAccountsUIDList = herbEntity.likedAccountsUIDList.plus(repository.currentUser!!.uid)))
+            } else {
+                repository.updateHerb(herbEntity.copy(likedAccountsUIDList = herbEntity.likedAccountsUIDList.minus(repository.currentUser!!.uid)))
+            }
             getData()
         }
     }

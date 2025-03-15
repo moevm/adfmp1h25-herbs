@@ -27,10 +27,12 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.traceEventEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +53,7 @@ import com.herbsapp.data.room.entity.AccountEntity
 import com.herbsapp.presentation.ui.CustomTextField
 import com.herbsapp.presentation.ui.CustomToast
 import com.herbsapp.presentation.ui.PrimaryButton
+import com.herbsapp.presentation.ui.RegisterDialog
 import com.herbsapp.presentation.ui.Resource
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.imageLoader
@@ -61,16 +64,14 @@ import com.herbsapp.presentation.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(showBackground = true, backgroundColor = 0xFFFAF9F9)
 @Composable
-fun AccountScreen(navController: NavController = rememberNavController()) {
-    val vm = koinViewModel<AuthViewModel>()
+fun AccountScreen(navController: NavController = rememberNavController(), vm: AuthViewModel) {
+    val name = remember { mutableStateOf(vm.currentUser?.displayName!!) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(top = 48.dp)) {
-        val name = vm.name.collectAsState()
         AccountTitle(text = name.value ?: "загрузка...")
         Spacer(Modifier.size(32.dp))
-        AccountBody(vm)
+        AccountBody(vm, navController, name)
     }
 
     val bottomSheetState = androidx.compose.material.rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -85,9 +86,7 @@ fun AccountScreen(navController: NavController = rememberNavController()) {
             PrimaryButton(modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 32.dp), text = stringResource(R.string.exit)) {
                 vm.logout()
                 navController.navigate(Routes.Launch.route) {
-                    popUpTo(Routes.Account.route) {
-                        inclusive = true
-                    }
+                    popUpTo(0)
                 }
             }
         }
@@ -115,17 +114,24 @@ fun Authors(bottomSheetState: ModalBottomSheetState) {
 }
 
 @Composable
-fun AccountBody(vm: AuthViewModel) {
+fun AccountBody(vm: AuthViewModel, navController: NavController, name: MutableState<String>) {
     val context = LocalContext.current
     val newName = remember { mutableStateOf("") }
     val newMail = remember { mutableStateOf("") }
 
+    val isDialogShow = remember { mutableStateOf(false) }
+    RegisterDialog(isDialogShow, navController, vm)
+
     ChangeAccountSetting(value = newName, title = stringResource(R.string.change_name), titleForTextFiled = stringResource(R.string.new_name)) {
         if (!newName.value.isNullOrEmpty()) {
-            vm.changeName(newName.value)
-            context.CustomToast(context.getString(R.string.change_name_apply))
-            vm.name.value = newName.value
-            newName.value = ""
+            if (!vm.isGuest(context)) {
+                vm.changeName(newName.value)
+                context.CustomToast(context.getString(R.string.change_name_apply))
+                name.value = newName.value
+                newName.value = ""
+            } else {
+                isDialogShow.value = true
+            }
         } else {
             context.CustomToast(context.getString(R.string.empty_text_field))
         }
@@ -135,8 +141,11 @@ fun AccountBody(vm: AuthViewModel) {
     val loadingState = remember { mutableStateOf(false) }
     ChangeAccountSetting(value = newMail, title = stringResource(R.string.change_mail), titleForTextFiled = stringResource(R.string.new_mail)) {
         if (!newMail.value.isNullOrEmpty() && newMail.value.contains("@") && newMail.value.substringAfter("@").contains(".")) {
-            vm.changeEmail(newMail.value)
-
+            if (!vm.isGuest(context)) {
+                vm.changeEmail(newMail.value)
+            } else {
+                isDialogShow.value = true
+            }
         } else {
             context.CustomToast(context.getString(R.string.empty_text_field))
         }
@@ -152,7 +161,6 @@ fun AccountBody(vm: AuthViewModel) {
             newMail.value = ""
         }
         is Resource.Failure -> {
-            println((changeMailState.value as Resource.Failure).exception.message)
             loadingState.value = false
             (changeMailState.value as Resource.Failure).exception.message?.let { context.CustomToast(it) }
         }

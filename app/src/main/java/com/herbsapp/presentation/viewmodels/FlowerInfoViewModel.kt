@@ -26,7 +26,11 @@ class FlowerInfoViewModel(val repository: AppRepository): ViewModel() {
 
     fun updateHerb(herbEntity: HerbEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateHerb(herbEntity)
+            if (herbEntity.isLiked && !herbEntity.likedAccountsUIDList.contains(repository.currentUser!!.uid)) {
+                repository.updateHerb(herbEntity.copy(likedAccountsUIDList = herbEntity.likedAccountsUIDList.plus(repository.currentUser!!.uid)))
+            } else {
+                repository.updateHerb(herbEntity.copy(likedAccountsUIDList = herbEntity.likedAccountsUIDList.minus(repository.currentUser!!.uid)))
+            }
             getHerbById(herbEntity.id)
         }
     }

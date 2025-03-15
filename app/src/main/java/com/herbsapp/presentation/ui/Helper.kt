@@ -4,6 +4,7 @@ import android.content.Context
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import com.herbsapp.data.room.entity.ElementEntity
+import com.herbsapp.data.room.entity.HerbEntity
 
 fun Context.imageLoader() = ImageLoader.Builder(this).components{ SvgDecoder.Factory()}.build()
 
@@ -27,12 +28,19 @@ data class DeterminerImaged(
     var selectVariant: String? = null
 )
 
+data class ResultHerb(
+    val herb: HerbEntity,
+    val similarPerc: Float,
+)
+
 sealed class SignValue {
     object All: SignValue()
     object Class: SignValue()
     object Genus: SignValue()
     object Taste: SignValue()
     object Family: SignValue()
+    object Veining: SignValue()
+    object Shape: SignValue()
 }
 
 sealed class Resource<out R> {

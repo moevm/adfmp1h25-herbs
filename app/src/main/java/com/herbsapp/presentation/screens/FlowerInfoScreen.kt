@@ -56,6 +56,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.herbsapp.R
 import com.herbsapp.data.room.entity.HerbEntity
 import com.herbsapp.presentation.ui.PrimaryButtonWIcon
+import com.herbsapp.presentation.ui.RegisterDialog
 import com.herbsapp.presentation.ui.Routes
 import com.herbsapp.presentation.ui.imageLoader
 import com.herbsapp.presentation.ui.theme.Typography
@@ -64,21 +65,22 @@ import com.herbsapp.presentation.ui.theme.button
 import com.herbsapp.presentation.ui.theme.gray
 import com.herbsapp.presentation.ui.theme.primary
 import com.herbsapp.presentation.ui.theme.white
+import com.herbsapp.presentation.viewmodels.AuthViewModel
 import com.herbsapp.presentation.viewmodels.FlowerInfoViewModel
 import com.herbsapp.presentation.viewmodels.MainViewModel
 import org.koin.androidx.compose.koinViewModel
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun FlowerInfoScreen(navController: NavController = rememberNavController(), id: Int = 1) {
+fun FlowerInfoScreen(navController: NavController = rememberNavController(), id: Int = 1, authVm: AuthViewModel) {
     val vm = koinViewModel<FlowerInfoViewModel>()
     vm.getHerbById(id)
+
     val herb by vm.herb.collectAsState()
     val context = LocalContext.current
 
     if (herb != null) {
         Column(Modifier.fillMaxSize()) {
-            TitleInfo(herb = herb!!, navController = navController, vm)
+            TitleInfo(herb = herb!!, navController = navController, vm, authVm)
             Spacer(Modifier.size(16.dp))
             SubtitleInfo(herb!!)
             Spacer(Modifier.size(16.dp))
@@ -207,13 +209,15 @@ fun BodyInfo(herb: HerbEntity) {
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_taste) + ": " + herb.taste, style = Typography.titleSmall.copy(fontSize = 18.sp))
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_class) + ": " + herb.mClass, style = Typography.titleSmall.copy(fontSize = 18.sp))
         Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_genus) + ": " + herb.genus, style = Typography.titleSmall.copy(fontSize = 18.sp))
+        Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_veining) + ": " + herb.veining, style = Typography.titleSmall.copy(fontSize = 18.sp))
+        Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.sign_shape) + ": " + herb.shape, style = Typography.titleSmall.copy(fontSize = 18.sp))
 
         Spacer(Modifier.size(90.dp))
     }
 }
 
 @Composable
-fun TitleInfo(herb: HerbEntity, navController: NavController, vm: FlowerInfoViewModel) {
+fun TitleInfo(herb: HerbEntity, navController: NavController, vm: FlowerInfoViewModel, authVm: AuthViewModel) {
     val context = LocalContext.current
 
     Box {
@@ -230,14 +234,18 @@ fun TitleInfo(herb: HerbEntity, navController: NavController, vm: FlowerInfoView
             navController = navController,
             id = herb.id
         )
-        BigLikeButton(herb, Modifier.align(Alignment.BottomEnd).offset(y = 16.dp), context, vm)
+        BigLikeButton(herb, Modifier.align(Alignment.BottomEnd).offset(y = 16.dp), context, vm, navController, authVm)
     }
 }
 
 @Composable
-fun BigLikeButton(herb: HerbEntity, modifier: Modifier, context: Context, vm: FlowerInfoViewModel) {
+fun BigLikeButton(herb: HerbEntity, modifier: Modifier, context: Context, vm: FlowerInfoViewModel, navController: NavController, authVm: AuthViewModel) {
     var isLikedState by remember { mutableStateOf(herb.isLiked) }
     val likedColor by animateColorAsState(if (isLikedState) primary else gray)
+
+    val isDialogShow = remember { mutableStateOf(false) }
+    RegisterDialog(isDialogShow, navController, authVm)
+
     Box(
         modifier = modifier
             .padding(end = 16.dp, top = 16.dp)
@@ -247,8 +255,12 @@ fun BigLikeButton(herb: HerbEntity, modifier: Modifier, context: Context, vm: Fl
                 CircleShape
             )
             .clickable {
-                isLikedState = !isLikedState
-                vm.updateHerb(herb.copy(isLiked = isLikedState))
+                if (!authVm.isGuest(context)) {
+                    isLikedState = !isLikedState
+                    vm.updateHerb(herb.copy(isLiked = isLikedState))
+                } else {
+                    isDialogShow.value = true
+                }
             }
             .background(white)
             .padding(16.dp), contentAlignment = Alignment.Center
